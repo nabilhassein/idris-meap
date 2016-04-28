@@ -2,7 +2,7 @@ module DataStore
 
 import Data.Vect
 
--- 4.3 but skipping ahead to ch6 for record syntax
+-- 4.3 but skipping ahead to ch6 for record syntax -- solves 4.3.5 ex1
 record DataStore where
   constructor MkData
   size : Nat
@@ -41,4 +41,10 @@ main : IO ()
 main = replWith (MkData _ []) "Command: " processInput
 
 
--- 4.3.5 exercises
+-- 4.3.5
+search : String -> DataStore -> List (Nat, String)
+search s (MkData _ items) = foldr (\(index, item), acc =>
+ if s `isInfixOf` item
+ then (finToNat index, item) :: acc
+ else acc
+) [] (zip range items)
