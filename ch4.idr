@@ -1,3 +1,6 @@
+import Data.Fin
+import Data.Vect
+
 -- 4.1.5
 
 -- a binary search tree
@@ -56,3 +59,14 @@ biggestTriangle (Primitive _)                = Nothing
 biggestTriangle (Combine p1 p2)              = maxMaybe (biggestTriangle p1) (biggestTriangle p2)
 biggestTriangle (Rotate _ p)                 = biggestTriangle p
 biggestTriangle (Translate _ _ p)            = biggestTriangle p
+
+
+-- selected from 4.2.4
+take : (k : Fin (S n)) -> Vect n a -> Vect (finToNat k) a
+take FZ     _         = []
+take (FS p) (x :: xs) = x :: take p xs
+
+sumEntries : Num a => {n : Nat} -> Integer -> Vect n a -> Vect n a -> Maybe a
+sumEntries {n} k xs ys = do
+  i <- integerToFin k n
+  Just $ index i xs + index i ys
