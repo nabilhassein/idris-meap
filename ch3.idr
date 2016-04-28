@@ -2,8 +2,7 @@ import Data.Vect
 
 -- 3.2.4
 myLength : List a -> Nat
-myLength [] = Z
-myLength (_ :: xs) = S (myLength xs)
+myLength = foldl (\acc, _ => S acc) 0
 
 myReverse : List a -> List a
 myReverse = foldl (\acc, x => x :: acc) []
