@@ -10,7 +10,7 @@ counts : String -> (Nat, Nat)
 counts s = (length (words s), length s)
 
 top_ten : Ord a => List a -> List a
-top_ten = reverse . Prelude.List.take 10 . reverse . sort
+top_ten xs = reverse . take 10 $ reverse $ sort $ xs
 
 over_length : Nat -> List String -> Nat
 over_length n = length . filter (\x => length x > n)
