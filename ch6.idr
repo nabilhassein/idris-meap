@@ -1,3 +1,5 @@
+import Data.Vect
+
 -- 6.2 but using List instead of encoding recursion in Format
 data Format = Number | Str | Lit String
 
@@ -24,3 +26,15 @@ toFormat (c :: chars)          = case toFormat chars of
 
 printf : (fmt : String) -> (PrintfType . toFormat . unpack) fmt
 printf _ = printfFmts _ ""
+
+
+-- 6.2.3 new work
+Matrix : Nat -> Nat -> Type
+Matrix n m = Vect n (Vect m Double)
+
+TupleVect : Nat -> Type -> Type
+TupleVect Z     _    = ()
+TupleVect (S n) type = (type, TupleVect n type)
+
+test : TupleVect 4 Nat
+test = (1, 2, 3, 4, ())
