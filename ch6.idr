@@ -24,7 +24,7 @@ toFormat (c :: chars)          = case toFormat chars of
   Lit lit :: fmts => Lit (strCons c lit) :: fmts
   fmts            => Lit (strCons c "" ) :: fmts
 
-printf : (fmt : String) -> (PrintfType . toFormat . unpack) fmt
+printf : (fmt : String) -> (PrintfType . Main.toFormat . Prelude.Strings.unpack) fmt
 printf _ = printfFmts _ ""
 
 
