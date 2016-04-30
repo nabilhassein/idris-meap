@@ -37,10 +37,15 @@ parse : (schema : Schema) -> String -> Maybe (Command schema)
 parse schema input = case span (/= ' ') input of
       (cmd, args) => parseCommand schema cmd (ltrim args)
 
+display : SchemaType schema -> String
+display {schema = SString} str    = str
+display {schema = SInt}    num    = show num
+display {schema = _ .+. _} (a, b) = display a ++ ", " ++ display b
+
 getEntry : Integer -> (store : DataStore) -> Maybe (String, DataStore)
 getEntry pos store = case integerToFin pos (size store) of
   Nothing => Just ("Out of range\n", store)
-  Just id => Just (?display (index id (items store)) ++ "\n", store)
+  Just id => Just (display (index id $ items store) ++ "\n", store)
 
 processInput : DataStore -> String -> Maybe (String, DataStore)
 processInput store userInput = case parse (schema store) userInput of
@@ -54,7 +59,7 @@ main = replWith (MkData SString _ []) "Command: " processInput
 
 
 -- 4.3.5
-search : String -> DataStore -> List (Nat, String)
+search : String -> (store : DataStore) -> List (Fin (size store), String)
 search s (MkData SString _ items) = foldr (\(index, item), acc =>
- if s `isInfixOf` item then (finToNat index, item) :: acc else acc
+ if s `isInfixOf` item then (index, item) :: acc else acc
 ) [] (zip range items)
