@@ -25,12 +25,37 @@ data Command : (schema : Schema) -> Type where
   Get : Integer -> Command schema
   Quit : Command schema
 
+parsePrefix : (schema : Schema) -> String -> Maybe (SchemaType schema, String)
+parsePrefix SString   input = (getQuoted . unpack) input
+  where
+    getQuoted : List Char -> Maybe (String, String)
+    getQuoted ('"' :: cs) = case span (/= '"') cs of
+       (quoted, '"' :: rest) => Just (pack quoted, ltrim $ pack rest)
+       _                     => Nothing
+    getQuoted _           = Nothing
+
+parsePrefix SInt      input = case span isDigit input of
+                              ("", rest)  => Nothing
+                              (num, rest) => Just (cast num, ltrim rest)
+parsePrefix (l .+. r) input = case parsePrefix l input of
+ Nothing              => Nothing
+ Just (l_val, input') => case parsePrefix r input' of
+   Nothing               => Nothing
+   Just (r_val, input'') => Just ((l_val, r_val), input'')
+
+
+
+parseBySchema : (schema : Schema) -> String -> Maybe (SchemaType schema)
+parseBySchema schema input = case parsePrefix schema input of
+                                  Just (res, "") => Just res
+                                  _              => Nothing
+
 parseCommand : (schema : Schema) -> String -> String -> Maybe (Command schema)
-parseCommand schema "add"  rest = Just (Add (?parseBySchema rest))
-parseCommand schema "get"  val  = if all isDigit (unpack val)
+parseCommand schema "add"  rest = map Add (parseBySchema schema rest)
+parseCommand _      "get"  val  = if all isDigit (unpack val)
                                   then Just . Get $ cast val
                                   else Nothing
-parseCommand schema "quit"  _   = Just Quit
+parseCommand _      "quit"  _   = Just Quit
 parseCommand _       _      _   = Nothing
 
 parse : (schema : Schema) -> String -> Maybe (Command schema)
