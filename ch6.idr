@@ -5,15 +5,15 @@ data Format = Number | Str | Lit String
 
 PrintfType : List Format -> Type
 PrintfType []               = String
-PrintfType (Number :: fmt)  = Int -> PrintfType fmt
-PrintfType (Str :: fmt)     = String -> PrintfType fmt
-PrintfType ((Lit _) :: fmt) = PrintfType fmt
+PrintfType (Number :: fmts)  = Int -> PrintfType fmts
+PrintfType (Str :: fmts)     = String -> PrintfType fmts
+PrintfType (Lit _ :: fmts)   = PrintfType fmts
 
 printfFmts : (fmts : List Format) -> String -> PrintfType fmts
 printfFmts []                acc = acc
 printfFmts (Number :: fmts)  acc = \i => printfFmts fmts (acc ++ show i)
 printfFmts (Str :: fmts)     acc = \s => printfFmts fmts (acc ++ s)
-printfFmts ((Lit s) :: fmts) acc = printfFmts fmts (acc ++ s)
+printfFmts (Lit s :: fmts)   acc = printfFmts fmts (acc ++ s)
 
 toFormat : List Char -> List Format
 toFormat []                    = []
