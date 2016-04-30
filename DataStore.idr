@@ -37,11 +37,10 @@ parsePrefix SString   input = (getQuoted . unpack) input
 parsePrefix SInt      input = case span isDigit input of
                               ("", rest)  => Nothing
                               (num, rest) => Just (cast num, ltrim rest)
-parsePrefix (l .+. r) input = case parsePrefix l input of
- Nothing              => Nothing
- Just (l_val, input') => case parsePrefix r input' of
-   Nothing               => Nothing
-   Just (r_val, input'') => Just ((l_val, r_val), input'')
+parsePrefix (l .+. r) input = do
+  (l_val, input')  <- parsePrefix l input
+  (r_val, input'') <- parsePrefix r input'
+  return ((l_val, r_val), input'')
 
 
 
