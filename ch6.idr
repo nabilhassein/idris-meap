@@ -4,10 +4,11 @@ import Data.Vect
 data Format = Number | Str | Lit String
 
 PrintfType : List Format -> Type
-PrintfType []               = String
-PrintfType (Number :: fmts)  = Int -> PrintfType fmts
-PrintfType (Str :: fmts)     = String -> PrintfType fmts
-PrintfType (Lit _ :: fmts)   = PrintfType fmts
+PrintfType = foldr (\fmt, t => case fmt of
+  Number => Int -> t
+  Str    => String -> t
+  Lit _  => t
+) String
 
 printfFmts : (fmts : List Format) -> String -> PrintfType fmts
 printfFmts []                acc = acc
