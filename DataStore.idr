@@ -37,9 +37,9 @@ parsePrefix SString   input = (getQuoted . unpack) input
 parsePrefix SInt      input = case span isDigit input of
                               ("", rest)  => Nothing
                               (num, rest) => Just (cast num, ltrim rest)
-parsePrefix (l .+. r) input = do
-  (l_val, input')  <- parsePrefix l input
-  (r_val, input'') <- parsePrefix r input'
+parsePrefix (lschema .+. rschema) input = do
+  (l_val, input')  <- parsePrefix lschema input
+  (r_val, input'') <- parsePrefix rschema input'
   return ((l_val, r_val), input'')
 
 
@@ -62,7 +62,7 @@ parse schema input = case span (/= ' ') input of
       (cmd, args) => parseCommand schema cmd (ltrim args)
 
 display : SchemaType schema -> String
-display {schema = SString} str    = str
+display {schema = SString} str    = "\"" ++ str ++ "\""
 display {schema = SInt}    num    = show num
 display {schema = _ .+. _} (a, b) = display a ++ ", " ++ display b
 
@@ -79,7 +79,7 @@ processInput store userInput = case parse (schema store) userInput of
   Just Quit       => Nothing
 
 main : IO ()
-main = replWith (MkData SString _ []) "Command: " processInput
+main = replWith (MkData (SString .+. SString .+. SInt) _ []) "Command: " processInput
 
 
 -- 4.3.5
