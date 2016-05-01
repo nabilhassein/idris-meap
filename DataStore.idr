@@ -4,9 +4,10 @@ import Data.Vect
 
 
 infixr 5 .+.
-data Schema = SString | SInt | (.+.) Schema Schema
+data Schema = SChar | SString | SInt | (.+.) Schema Schema
 
 SchemaType : Schema -> Type
+SchemaType SChar     = Char
 SchemaType SString   = String
 SchemaType SInt      = Int
 SchemaType (x .+. y) = (SchemaType x, SchemaType y)
@@ -26,6 +27,11 @@ data Command : (schema : Schema) -> Type where
   Quit : Command schema
 
 parsePrefix : (schema : Schema) -> String -> Maybe (SchemaType schema, String)
+parsePrefix SChar     input = (getQuoted . unpack) input
+  where
+    getQuoted : List Char -> Maybe (Char, String)
+    getQuoted ('\'' :: c :: '\'' :: rest) = Just (c, ltrim $ pack rest)
+    getQuoted _                           = Nothing
 parsePrefix SString   input = (getQuoted . unpack) input
   where
     getQuoted : List Char -> Maybe (String, String)
@@ -50,8 +56,8 @@ parseBySchema schema input = case parsePrefix schema input of
                                   _              => Nothing
 
 parseCommand : (schema : Schema) -> String -> String -> Maybe (Command schema)
-parseCommand schema "add"  rest = map Add (parseBySchema schema rest)
-parseCommand _      "get"  val  = if all isDigit (unpack val)
+parseCommand schema "add"  rest = map Add $ parseBySchema schema rest
+parseCommand _      "get"  val  = if all isDigit $ unpack val
                                   then Just . Get $ cast val
                                   else Nothing
 parseCommand _      "quit"  _   = Just Quit
@@ -62,6 +68,7 @@ parse schema input = case span (/= ' ') input of
       (cmd, args) => parseCommand schema cmd (ltrim args)
 
 display : SchemaType schema -> String
+display {schema = SChar}   char   = show char
 display {schema = SString} str    = "\"" ++ str ++ "\""
 display {schema = SInt}    num    = show num
 display {schema = _ .+. _} (a, b) = display a ++ ", " ++ display b
