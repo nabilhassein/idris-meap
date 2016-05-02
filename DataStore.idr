@@ -24,6 +24,7 @@ addToStore (MkData schema size items) newItem = MkData schema _ (items ++ [newIt
 data Command : (schema : Schema) -> Type where
   Add : SchemaType schema -> Command schema
   Get : Integer -> Command schema
+  GetAll : Command schema
   Quit : Command schema
 
 parsePrefix : (schema : Schema) -> String -> Maybe (SchemaType schema, String)
@@ -57,6 +58,7 @@ parseBySchema schema input = case parsePrefix schema input of
 
 parseCommand : (schema : Schema) -> String -> String -> Maybe (Command schema)
 parseCommand schema "add"  rest = map Add $ parseBySchema schema rest
+parseCommand _      "get"  ""   = Just GetAll
 parseCommand _      "get"  val  = if all isDigit $ unpack val
                                   then Just . Get $ cast val
                                   else Nothing
@@ -78,11 +80,17 @@ getEntry pos store = case integerToFin pos (size store) of
   Nothing => Just ("Out of range\n", store)
   Just id => Just (display (index id $ items store) ++ "\n", store)
 
+getAll : DataStore -> Maybe (String, DataStore)
+getAll store = case size store of
+  Z => Just ("Store is empty\n", store)
+  _ => Just ((concat . intersperse "; " . map display $ items store) ++ "\n", store)
+
 processInput : DataStore -> String -> Maybe (String, DataStore)
 processInput store userInput = case parse (schema store) userInput of
   Nothing         => Just ("Invalid command\n", store)
   Just (Add item) => Just ("ID " ++ show (size store) ++ "\n", addToStore store item)
   Just (Get pos)  => getEntry pos store
+  Just GetAll     => getAll store
   Just Quit       => Nothing
 
 main : IO ()
