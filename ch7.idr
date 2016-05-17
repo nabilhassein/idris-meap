@@ -1,5 +1,3 @@
-import Data.Vect
-
 -- 7.1.6
 data Shape = Triangle Double Double | Rectangle Double Double | Circle Double
 
@@ -51,3 +49,27 @@ Neg t => Neg (Expr t) where
 
 (Neg t, Integral t) => Cast (Expr t) t where
   cast = eval
+
+
+-- 7.3.4 exercises
+Functor Expr where
+  map f (Val x)   = Val (f x)
+  map f (Add x y) = Add (map f x) (map f y)
+  map f (Sub x y) = Sub (map f x) (map f y)
+  map f (Mul x y) = Mul (map f x) (map f y)
+  map f (Div x y) = Div (map f x) (map f y)
+  map f (Abs x)   = Abs (map f x)
+
+
+data Vect : Nat -> Type -> Type where
+  Nil  : Vect 0 a
+  (::) : a -> Vect k a -> Vect (S k) a
+
+Eq a => Eq (Vect n a) where
+  []        == []        = True
+  (x :: xs) == (y :: ys) = x == y && xs == ys
+
+Foldable (Vect n) where
+  foldr _ acc []        = acc
+  foldr f acc (x :: xs) = f x $ foldr f acc xs
+
